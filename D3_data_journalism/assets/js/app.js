@@ -1,35 +1,55 @@
 // Set folder route where data is contained
 var route = "assets/data/data.csv"
 
-// #########################################################
+// #############################################################
 // PART I. CREATE SVG CANVAS
-// #########################################################
+// #############################################################
 
 // set the dimensions and margins of the graph
-var margin = {top: 10, right: 30, bottom: 30, left: 60},
-    width = 460 - margin.left - margin.right,
+// var width = parseInt(d3.select("#scatter").style("width"));
+// var height = width * (3/4) // 4:3 aspect ratio
+// console.log(width)
+// console.log(height)
+// var margin = {top: 30, right: 30, bottom: 60, left: 60};
+//     //width = screenWidth - margin.left - margin.right,
+//     //height = 400 - margin.top - margin.bottom;
+
+// // append the svg object to the body of the page
+// var svg = d3.select("#scatterplot")
+//     .append("svg")
+//       .attr("width", width)
+//       .attr("height", height)
+//       .attr("class", "canvas")
+//     .append("g")
+//       .attr("transform",
+//           "translate(" + margin.left + "," + margin.top + ")"); 
+
+//
+var margin = {top: 30, right: 30, bottom: 60, left: 60},
+    width = 510 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
 
 // append the svg object to the body of the page
-var svg = d3.select("#my_dataviz")
+var svg = d3.select("#scatterplot")
   .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
+    .attr("class", "canvas")
   .append("g")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")"); 
 
-// #########################################################
-// PART II. BASIC CHART ELEMENTS; AXES GROUPS
-// #########################################################
+// #############################################################
+// PART II. BASIC CHART ELEMENTS; AXES GROUPS, SCALES & LABELS
+// #############################################################
 
 // Define axes scales 
 var xScale = d3.scaleLinear()
-    .domain([0, 22]) //xDomain[0], xDomain[1]
+    .domain([])
     .range([ 0, width ]);
 
 var yScale = d3.scaleLinear()
-    .domain([0, 25]) // yDomain[0], yDomain[1]
+    .domain([])
     .range([ height, 0]);
 
 // Define X and Y axes
@@ -45,6 +65,12 @@ svg.append("g")
 svg.append("g")
     .attr("id", "yAxis")
     .call(yAxis);
+
+svg.append("text")
+    .attr("class", "xAxisLabel")
+    .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
+    .attr("transform", "translate(230,300)")  // text is drawn off the screen top left, move down and out and rotate
+    .text("Original Scale");
 
 // Create D3 selectors for dropdowns
 var dropDownAll = d3.selectAll(".custom-select")
@@ -62,10 +88,6 @@ dropDownOpt.forEach(factor => {
         .text(factor)
 })
 
-// Create event handlers and a function to pass new inputs
-// Event handler calling function on change
-var change = dropDownAll.on("change", inputChange)
-
 //Set defaults for initial rendering
 // Default values
 var xDefault = "poverty";
@@ -76,6 +98,9 @@ function init() {
     renderScatter(xDefault, yDefault)
 }
 init();
+
+// Event handler calling inputChange function on change
+var change = dropDownAll.on("change", inputChange)
 
 // Function grabbing new input and passing it along
 function inputChange() {
@@ -89,7 +114,6 @@ function inputChange() {
     }
     console.log(input1)
     if (dropDown2Prop === "Choose...") {
-        //console.log("yes")
         var input2 = yDefault
     } else {
         input2 = dropDown2Prop    
@@ -97,7 +121,7 @@ function inputChange() {
     renderScatter(input1, input2)
 }
 
-// Create a function that returns the min and max to adjust graph axes dynamically
+// Function that returns the min and max to adjust graph axes dynamically
 function axesDomain(series) {
     function min (series) {
         var seriesNum = series.map(d => parseFloat(d))
@@ -118,7 +142,9 @@ function axesDomain(series) {
 function renderScatter(xData, yData) {
     // Remove existing scatterplot
     svg.selectAll("circle").remove()
+    svg.selectAll(".textCircle").remove()
 
+    // Call the data
     d3.csv(route).then(function(data) {
         // Call Domain function to reset axes dynamically
         var xDomain = axesDomain(
@@ -140,22 +166,49 @@ function renderScatter(xData, yData) {
             .transition().duration(500)
             .call(yAxis)
 
-        // Add dots
-        svg.append('g')
-            .selectAll("dot")
+        //Wrap your circles and texts inside a <g>; https://stackoverflow.com/questions/36954426/adding-label-on-a-d3-scatter-plot-circles
+        var gDots = svg.selectAll("gdot")
             .data(data)
             .enter()
-            .append("circle")
+            .append('g');
+            
+        // Add scatterplot circles
+        gDots.append("circle")
             .attr("cx", d => xScale(d[xData]))
             .attr("cy", d => yScale(d[yData]))
-            .attr("r", 5)
-            .style("fill", "#69b3a2")
-    })
-}
+            .attr("r", 10)
+            .attr("class", "dataCirle")
+            .style("fill", "#69b3a2");
+            
+        gDots.append("text")
+            .text(function(d){
+                return d.abbr
+            })
+            .attr("x", function(d) {
+                return xScale(d[xData])
+            })
+            .attr("y", function(d){
+                return yScale(d[yData])
+            })
+            .attr("font-size", 7.5)
+            .attr("class", "textCircle")
+            .attr("transform", "translate(-5, 3)")
+            
 
-// function rescale() {
-//     yScale.domain([0,Math.floor((Math.random()*90)+11)])  // change scale to 0, to between 10 and 100
-//     vis.select(".yaxis")
-//             .transition().duration(1500).ease("sin-in-out")  // https://github.com/mbostock/d3/wiki/Transitions#wiki-d3_ease
-//             .call(yAxis); 
-// }
+        // var toolTip = d3.select("body").append("div")
+        // .attr("class", "tooltip");
+        
+        // // Step 2: Add an onmouseover event to display a tooltip
+        // // ========================================================
+        // circlesGroup.on("mouseover", function(d, i) {
+        //     toolTip.style("display", "block");
+        //     toolTip.html(`Pizzas eaten: <strong>${pizzasEatenByMonth[i]}</strong>`)
+        //         .style("left", d3.event.pageX + "px")
+        //         .style("top", d3.event.pageY + "px");
+        // })
+        // // Step 3: Add an onmouseout event to make the tooltip invisible
+        // .on("mouseout", function() {
+        //     toolTip.style("display", "none");
+        // });
+    });
+}
