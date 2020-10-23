@@ -36,6 +36,7 @@ var svg = d3.select("#scatterplot")
     .attr("height", height + margin.top + margin.bottom)
     .attr("class", "canvas")
   .append("g")
+    .attr("class", "scatter")
     .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")"); 
 
@@ -65,12 +66,6 @@ svg.append("g")
 svg.append("g")
     .attr("id", "yAxis")
     .call(yAxis);
-
-svg.append("text")
-    .attr("class", "xAxisLabel")
-    .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
-    .attr("transform", "translate(230,300)")  // text is drawn off the screen top left, move down and out and rotate
-    .text("Original Scale");
 
 // Create D3 selectors for dropdowns
 var dropDownAll = d3.selectAll(".custom-select")
@@ -140,9 +135,11 @@ function axesDomain(series) {
 }
 
 function renderScatter(xData, yData) {
-    // Remove existing scatterplot
+    // Remove existing data (circles, text and labels)
     svg.selectAll("circle").remove()
     svg.selectAll(".textCircle").remove()
+    svg.select(".xAxisLabel").remove()
+    svg.select(".yAxisLabel").remove()
 
     // Call the data
     d3.csv(route).then(function(data) {
@@ -194,7 +191,22 @@ function renderScatter(xData, yData) {
             .attr("class", "textCircle")
             .attr("transform", "translate(-5, 3)")
             
+        const xLabelCap = xData.charAt(0).toUpperCase() + xData.slice(1)
+        svg.append("text")
+            .attr("class", "xAxisLabel")
+            .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
+            .attr("transform", "translate(" + width / 2 + "," + (height + 45) + ")")  // text is drawn off the screen top left, move down and out and rotate
+            .text(xLabelCap);
 
+        const yLabelCap = yData.charAt(0).toUpperCase() + yData.slice(1)
+        console.log(yLabelCap)
+        svg.append("text")
+            .attr("class", "yAxisLabel")
+            .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
+            .attr("transform", "translate("+ (0 - margin.right) +","+ (height / 2) + ")rotate(-90)")  // text is drawn off the screen top left, move down and out and rotate
+            .text(yLabelCap);
+            //"translate(" + margin.left + "," + margin.top + ")");
+            
         // var toolTip = d3.select("body").append("div")
         // .attr("class", "tooltip");
         
