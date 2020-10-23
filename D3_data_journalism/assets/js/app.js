@@ -5,31 +5,12 @@ var route = "assets/data/data.csv"
 // PART I. CREATE SVG CANVAS
 // #############################################################
 
-// set the dimensions and margins of the graph
-// var width = parseInt(d3.select("#scatter").style("width"));
-// var height = width * (3/4) // 4:3 aspect ratio
-// console.log(width)
-// console.log(height)
-// var margin = {top: 30, right: 30, bottom: 60, left: 60};
-//     //width = screenWidth - margin.left - margin.right,
-//     //height = 400 - margin.top - margin.bottom;
-
-// // append the svg object to the body of the page
-// var svg = d3.select("#scatterplot")
-//     .append("svg")
-//       .attr("width", width)
-//       .attr("height", height)
-//       .attr("class", "canvas")
-//     .append("g")
-//       .attr("transform",
-//           "translate(" + margin.left + "," + margin.top + ")"); 
-
-//
+// Establish area
 var margin = {top: 30, right: 30, bottom: 60, left: 60},
     width = 510 - margin.left - margin.right,
     height = 400 - margin.top - margin.bottom;
 
-// append the svg object to the body of the page
+// Append the svg object to the body of the page
 var svg = d3.select("#scatterplot")
   .append("svg")
     .attr("width", width + margin.left + margin.right)
@@ -53,7 +34,7 @@ var yScale = d3.scaleLinear()
     .domain([])
     .range([ height, 0]);
 
-// Define X and Y axes
+// Create axes generators
 var xAxis = d3.axisBottom(xScale);
 var yAxis = d3.axisLeft(yScale);
 
@@ -195,7 +176,7 @@ function renderScatter(xData, yData) {
         svg.append("text")
             .attr("class", "xAxisLabel")
             .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
-            .attr("transform", "translate(" + width / 2 + "," + (height + 45) + ")")  // text is drawn off the screen top left, move down and out and rotate
+            .attr("transform", "translate(" + width / 2 + "," + (height + 45) + ")")
             .text(xLabelCap);
 
         const yLabelCap = yData.charAt(0).toUpperCase() + yData.slice(1)
@@ -203,21 +184,20 @@ function renderScatter(xData, yData) {
         svg.append("text")
             .attr("class", "yAxisLabel")
             .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
-            .attr("transform", "translate("+ (0 - margin.right) +","+ (height / 2) + ")rotate(-90)")  // text is drawn off the screen top left, move down and out and rotate
+            .attr("transform", "translate("+ (0 - margin.right) +","+ (height / 2) + ")rotate(-90)")
             .text(yLabelCap);
-            //"translate(" + margin.left + "," + margin.top + ")");
-            
-        // var toolTip = d3.select("body").append("div")
-        // .attr("class", "tooltip");
+        
+        // Step 1: 
+        // var toolTip = d3.select("svg").append("div")
+        //     .attr("class", "tooltip");
         
         // // Step 2: Add an onmouseover event to display a tooltip
         // // ========================================================
-        // circlesGroup.on("mouseover", function(d, i) {
+        // gDots.on("mouseover", function(d) {
+        //     var state = d.state 
         //     toolTip.style("display", "block");
-        //     toolTip.html(`Pizzas eaten: <strong>${pizzasEatenByMonth[i]}</strong>`)
-        //         .style("left", d3.event.pageX + "px")
-        //         .style("top", d3.event.pageY + "px");
-        // })
+        //      toolTip.html(`<strong>${state}</strong>`);
+        //})
         // // Step 3: Add an onmouseout event to make the tooltip invisible
         // .on("mouseout", function() {
         //     toolTip.style("display", "none");
